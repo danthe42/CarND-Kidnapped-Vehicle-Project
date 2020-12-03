@@ -20,18 +20,36 @@
 
 using std::string;
 using std::vector;
+using std::normal_distribution;
+
+// Random number generator: this is global.  
+std::default_random_engine g_gen;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
-  /**
-   * TODO: Set the number of particles. Initialize all particles to 
-   *   first position (based on estimates of x, y, theta and their uncertainties
-   *   from GPS) and all weights to 1. 
-   * TODO: Add random Gaussian noise to each particle.
-   * NOTE: Consult particle_filter.h for more information about this method 
-   *   (and others in this file).
-   */
-  num_particles = 0;  // TODO: Set the number of particles
 
+
+  if (!is_initialized)
+  {
+    num_particles = 1000;  // Number of particles
+    normal_distribution<double> dist_x(x, std[0]);  
+    normal_distribution<double> dist_y(y, std[1]);
+    normal_distribution<double> dist_theta(theta, std[2]);
+
+    particles.resize(num_particles);
+    for (int i=0;i<num_particles;i++)
+    {
+      Particle &p = particles[i];;
+      p.id = i;
+      p.x = dist_x(g_gen);  
+      p.y = dist_y(g_gen);  
+      p.theta = dist_theta(g_gen);  
+      p.weight = 1.;               
+    }
+    is_initialized = true;
+  } else {
+    std::cerr << "Reinit ? This method should be called only once." << std::endl;
+    exit(-1);
+  }
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], 
